@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dunyaya hosgeldın ela</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@900&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --primary-pink: #ff69b4;
+            --soft-pink: #ffb6c1;
+            --accent-pink: #ff1493;
+            --white: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow-pink: rgba(255, 105, 180, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background-color: #000;
+            color: var(--white);
+        }
+
+        /* --- BACKGROUND SLIDER (ANA EKRAN) --- */
+        #bg-slider {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out, transform 6s ease-out;
+            transform: scale(1.05);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2;
+        }
+
+        /* --- CANVAS PARTICLES (HER ZAMAN EN ÜSTTE) --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 12;
+            pointer-events: none;
+        }
+
+        /* --- GİRİŞ EKRANI (BEYAZ, PEMBE, MOR & DİNAMİK ELA YAZISI) --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: linear-gradient(135deg, #ffffff 0%, #ffb6c1 40%, #ff69b4 70%, #8a2be2 100%);
+            background-size: 200% 200%;
+            animation: gradientBg 8s ease infinite;
+            transition: opacity 0.8s ease 0.4s, visibility 0.8s ease 0.4s;
+        }
+
+        @keyframes gradientBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* ELA Başlığı */
+        .ela-hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 6.5rem;
+            font-weight: 900;
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, #000000 0%, #ffffff 50%, #000000 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 7s linear infinite, floatTitle 4s ease-in-out infinite alternate;
+            filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.25));
+        }
+
+        @keyframes textShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes floatTitle {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-12px) scale(1.03); }
+            100% { transform: translateY(6px) scale(0.98); }
+        }
+
+        /* Voleybol Topu Butonu */
+        .volley-ball-btn {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.8rem;
+            box-shadow: 0 10px 35px rgba(138, 43, 226, 0.4);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+            animation: floatBall 2.5s ease-in-out infinite alternate;
+        }
+
+        .volley-ball-btn:hover {
+            transform: scale(1.12);
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 15px 45px rgba(255, 20, 147, 0.6);
+        }
+
+        @keyframes floatBall {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
+        }
+
+        /* Dönme & Patlama Animasyonu */
+        .volley-ball-btn.spin-explode {
+            animation: spinAndExplode 0.7s forwards ease-in-out !important;
+        }
+
+        @keyframes spinAndExplode {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.4) rotate(720deg);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(3.5) rotate(1080deg);
+                opacity: 0;
+            }
+        }
+
+        /* --- MAIN DASHBOARD --- */
+        #main-dashboard {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease 0.6s, transform 1s ease 0.6s;
+            pointer-events: none;
+        }
+
+        #main-dashboard.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .header-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.7);
+            background: linear-gradient(45deg, #ffffff, #ffb6c1, #ff69b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulseTitle 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseTitle {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.03); }
+        }
+
+        /* Timer Grid */
+        .timer-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            max-width: 950px;
+            width: 100%;
+            margin-bottom: 35px;
+        }
+
+        .time-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 10px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-pink);
+        }
+
+        .time-box .num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: block;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(255, 105, 180, 0.5);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-box .label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #ffc0cb;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        /* Note Button */
+        .btn-note {
+            background: linear-gradient(45deg, var(--primary-pink), var(--accent-pink));
+            color: var(--white);
+            border: none;
+            padding: 16px 45px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px var(--shadow-pink);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-note:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 20, 147, 0.6);
+        }
+
+        /* --- MODAL (NOTEPAD) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .notepad {
+            background: #fffdf0;
+            width: 100%;
+            max-width: 500px;
+            min-height: 280px;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            padding: 40px 30px 30px 60px;
+            transform: scale(0.8) rotate(-2deg);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-image: linear-gradient(#e8e8e8 1px, transparent 1px);
+            background-size: 100% 32px;
+        }
+
+        .notepad::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 40px;
+            width: 2px;
+            height: 100%;
+            background-color: #ff6b6b;
+        }
+
+        .modal-overlay.active .notepad {
+            transform: scale(1) rotate(0deg);
+        }
+
+        .btn-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.2s;
+            z-index: 10;
+        }
+
+        .btn-close:hover {
+            background: #ee5253;
+        }
+
+        .note-content {
+            font-family: 'Caveat', cursive;
+            font-size: 2.2rem;
+            color: #2c3e50;
+            line-height: 1.45;
+            word-wrap: break-word;
+            margin-top: 10px;
+        }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            .ela-hero-title { font-size: 4.5rem; letter-spacing: 8px; }
+            .header-title { font-size: 2rem; }
+            .timer-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            .time-box { padding: 15px 5px; }
+            .time-box .num { font-size: 1.8rem; }
+            .time-box .label { font-size: 0.75rem; }
+            .notepad { padding: 35px 20px 25px 45px; }
+            .notepad::before { left: 30px; }
+            .note-content { font-size: 1.7rem; }
+        }
+
+        @media (max-width: 480px) {
+            .ela-hero-title { font-size: 3.2rem; letter-spacing: 5px; }
+            .timer-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .header-title { font-size: 1.6rem; }
+            .volley-ball-btn { width: 95px; height: 95px; font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Arka Plan Slayt Gösterisi -->
+    <div id="bg-slider"></div>
+    <div class="overlay"></div>
+
+    <!-- Canvas Parçacık Efekti (En üst katmanda aktif) -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Giriş Ekranı -->
+    <div id="splash-screen">
+        <h1 class="ela-hero-title">ELA</h1>
+        <div class="volley-ball-btn" id="start-btn" title="Başlamak için dokun!">
+            🏐
+        </div>
+    </div>
+
+    <!-- Ana Ekran (Dashboard) -->
+    <div id="main-dashboard">
+        <h1 class="header-title">13 yıllık bır boksun!</h1>
+        
+        <div class="timer-container">
+            <div class="time-box">
+                <span class="num" id="years">0</span>
+                <span class="label">Yıl</span>
+            </div>
+            <div class="time-box">
+                <span class="num" id="months">0</span>
+                <span class="label">Ay</span>
+            </div>
+            <div class="time-box">
+                <span class="num" id="days">0</span>
+                <span class="label">Gün</span>
+            </div>
+            <div class="time-box">
+                <span class="num" id="hours">00</span>
+                <span class="label">Saat</span>
+            </div>
+            <div class="time-box">
+                <span class="num" id="minutes">00</span>
+                <span class="label">Dakika</span>
+            </div>
+            <div class="time-box">
+                <span class="num" id="seconds">00</span>
+                <span class="label">Saniye</span>
+            </div>
+        </div>
+
+        <button class="btn-note" id="open-note-btn">
+            Not
+        </button>
+    </div>
+
+    <!-- Defter Modalı -->
+    <div class="modal-overlay" id="note-modal">
+        <div class="notepad">
+            <button class="btn-close" id="close-note-btn">✕</button>
+            <div class="note-content">
+                2 kasımda 2013 de dogdun 2 kasım 2026da 13 yasına gırecen hala malsın
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOĞRUDAN RESİM BAĞLANTILARI (.png) ---
+        const images = [
+            'https://i.hizliresim.com/cyvni4df.png',
+            'https://i.hizliresim.com/8vo3zuue.png',
+            'https://i.hizliresim.com/ctyh7gwy.png',
+            'https://i.hizliresim.com/c4han9dz.png',
+            'https://i.hizliresim.com/spm6fvm2.png',
+            'https://i.hizliresim.com/qvqqwhw4.png',
+            'https://i.hizliresim.com/bsonpcbe.png'
+        ];
+
+        // --- ARKA PLAN SLAYT SİSTEMİ ---
+        const sliderContainer = document.getElementById('bg-slider');
+        images.forEach((imgUrl, index) => {
+            const slide = document.createElement('div');
+            slide.classList.add('slide');
+            if (index === 0) slide.classList.add('active');
+            slide.style.backgroundImage = `url('${imgUrl}')`;
+            sliderContainer.appendChild(slide);
+        });
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 4500);
+
+        // --- CANVAS PARÇACIK EFEKTİ ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 30;
+                this.size = Math.random() * 8 + 3;
+                this.speedY = Math.random() * 1.4 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.opacity = Math.random() * 0.7 + 0.3;
+                this.colors = ['#ffffff', '#ffb6c1', '#ff69b4', '#ffc0cb', '#e0b0ff'];
+                this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.02) * 0.6 + this.speedX;
+                if (this.y < -15) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 55; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // --- KONFETİ PATLAMASI ---
+        function triggerConfettiStorm() {
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 6,
+                    angle: 60,
+                    spread: 60,
+                    origin: { x: 0, y: 1 },
+                    colors: ['#ff69b4', '#ffffff', '#ffd700', '#8a2be2']
+                });
+                confetti({
+                    particleCount: 6,
+                    angle: 120,
+                    spread: 60,
+                    origin: { x: 1, y: 1 },
+                    colors: ['#ff69b4', '#ffffff', '#ffd700', '#8a2be2']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+
+        // --- TOPA TIKLAMA (DÖNME, PATLAMA VE GEÇİŞ) ---
+        const startBtn = document.getElementById('start-btn');
+        const splashScreen = document.getElementById('splash-screen');
+        const mainDashboard = document.getElementById('main-dashboard');
+        let isClicked = false;
+
+        startBtn.addEventListener('click', () => {
+            if (isClicked) return;
+            isClicked = true;
+
+            startBtn.classList.add('spin-explode');
+
+            setTimeout(() => {
+                triggerConfettiStorm();
+                splashScreen.classList.add('hidden');
+                mainDashboard.classList.add('visible');
+            }, 400);
+        });
+
+        // --- DİNAMİK YAŞ & CANLI SAYAÇ ---
+        const birthDate = new Date('2013-11-02T00:00:00');
+
+        function updateCounter() {
+            const now = new Date();
+            
+            let years = now.getFullYear() - birthDate.getFullYear();
+            let months = now.getMonth() - birthDate.getMonth();
+            let days = now.getDate() - birthDate.getDate();
+            let hours = now.getHours() - birthDate.getHours();
+            let minutes = now.getMinutes() - birthDate.getMinutes();
+            let seconds = now.getSeconds() - birthDate.getSeconds();
+
+            if (seconds < 0) { seconds += 60; minutes--; }
+            if (minutes < 0) { minutes += 60; hours--; }
+            if (hours < 0) { hours += 24; days--; }
+            if (days < 0) {
+                const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += prevMonth.getDate();
+                months--;
+            }
+            if (months < 0) { months += 12; years--; }
+
+            document.getElementById('years').innerText = years;
+            document.getElementById('months').innerText = months;
+            document.getElementById('days').innerText = days;
+            document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
+            document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
+        }
+
+        setInterval(updateCounter, 1000);
+        updateCounter();
+
+        // --- MODAL İŞLEMLERİ ---
+        const openNoteBtn = document.getElementById('open-note-btn');
+        const closeNoteBtn = document.getElementById('close-note-btn');
+        const noteModal = document.getElementById('note-modal');
+
+        openNoteBtn.addEventListener('click', () => {
+            noteModal.classList.add('active');
+        });
+
+        closeNoteBtn.addEventListener('click', () => {
+            noteModal.classList.remove('active');
+        });
+
+        noteModal.addEventListener('click', (e) => {
+            if (e.target === noteModal) {
+                noteModal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
